@@ -1,69 +1,48 @@
 #ifndef SOURCE_H
 #define SOURCE_H
 #include <iostream>
+#include <fstream>
+#include <vector>
 #include <cstdlib>
 #include <string>
 
 
 class Source {
     private:
-        std::string src;
+        std::vector<std::string> src;
     public:
         Source() {};
-        Source(const std::string& txt) {
-            src = txt;
+        Source(const std::string& filename) {
+            std::ifstream file;
+            file.open(filename, std::ios::binary);
+            std::string reading_buffer;
+            while(!file.eof()) {
+                std::getline(file, reading_buffer);
+                src.push_back(reading_buffer);
+            }
         };
-        void setSource(const std::string& txt) {
-            src = txt;
+        int rows() const {
+            return src.size();
+        };
+        int columns(int i) const {
+            return src[i - 1].size();
         };
         char getChar(int i, int j) const {
-            int row = 1;
-            int column = 1;
-            int index = 0;
-            while(index <= src.size()) {
-                if(row == i && column == j) {
-                    return src[index];
-                }
-                
-                index++;
-                column++;
-                if(src[index] == '\n') {
-                    if(i == row && j > column) {
-                        std::cout << "out of range" << std::endl;
-                        exit(1);
-                    }
-                    row++;
-                    column = 1;
-                    index++;
-                }
+            if(i < 1 || i > src.size() || j < 1 || j > src[i - 1].size()) {
+                std::cout << "invalid (row, column) access" << std::endl;
+                exit(1);
             }
-            std::cout << "out of range" << std::endl;
-            exit(1);
+            return src[i - 1][j - 1];
         };
         void writeChar(int i, int j, char c) {
-            int row = 1;
-            int column = 1;
-            int index = 0;
-            while(index <= src.size()) {
-                if(row == i && column == j) {
-                    src[index] == c;
-                    break;
-                }
-
-                index++;
-                column++;
-                if(src[index] == '\n') {
-                    if(i == row && j > column) {
-                        std::cout << "out of range" << std::endl;
-                        exit(1);
-                    }
-                    row++;
-                    column = 1;
-                    index++;
-                }
+            if(i < 1 || i > src.size() || j < 1 || j > src[i - 1].size()) {
+                std::cout << "invalid (row, column) access" << std::endl;
+                exit(1);
             }
-            std::cout << "out of range" << std::endl;
-            exit(1);
+            src[i - 1][j - 1] = c;
         }
+        std::string getLine(int i) const {
+            return src[i];
+        };
 };
 #endif

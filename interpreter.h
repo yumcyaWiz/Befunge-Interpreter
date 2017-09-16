@@ -1,8 +1,10 @@
 #ifndef INTERPRETER_H
 #define INTERPRETER_H
 #include <random>
+#include <cstdlib>
+#include <thread>
 #include "stack.h"
-#include "source_stream.h"
+#include "source.h"
 
 
 std::random_device rand_dev;
@@ -13,90 +15,276 @@ inline int rand() {
 }
 
 
+std::chrono::milliseconds duration(100);
+inline void sleep() {
+    std::this_thread::sleep_for(duration);
+}
+
+
 class Interpreter {
     private:
-        Stack<int> stack;
+        Stack stack = Stack(100);
         Source src;
         int row;
         int column;
         int direction;
         bool end;
         bool skip;
+        bool ascii;
+        std::string output;
     public:
-        Interpreter(std::string source_code) {
-            src.setSource(source_code);
+        Interpreter(const Source& _src) {
+            src = _src;
             row = 1;
             column = 1;
+            direction = 3;
             end = false;
             skip = false;
+            ascii = false;
         };
-        void run() {
-            while(!end) {
-                char c = src.getChar(row, column);
-                if(c == '<') {
-                    direction = 1;
-                }
-                else if(c == '>') {
-                    direction = 3;
-                }
-                else if(c == '^') {
-                    direction = 2;
-                }
-                else if(c == "v") {
-                    direction = 4;
-                }
-                else if(c == "_") {
-                    if(stack.pop() == 0) {
-                        direction = 3;
-                    }
-                    else {
-                        direction = 1;
-                    }
-                }
-                else if(c == '|') {
-                    if(stack.pop() == 0) {
-                        direction = 4;
-                    }
-                    else {
-                        direction = 2;
-                    }
-                }
-                else if(c == '?') {
-                    direction = rand();
-                }
-                else if(c == ' ') {
-                }
-                else if(c == '#') {
-                    skip = true;
-                }
-                else if(c == '@') {
-                    end = true;
-                }
-                else if(c == '0') {
-                    stack.push(0);
-                }
-                else if(c == '1') {
-                    stack.push(1);
-                }
-                else if(c == '2') {
-                    stack.push(2);
-                }
-                else if(c == '3') {
-                    stack.push(3);
-                }
-                else if(c == '4') {
-                    stack.push(4);
-                }
-                else if(c == '5') {
-                    stack.push(5);
-                }
-                else if(c == '6') {
-                    stack.push(6);
-                }
-                else if(c == '7') {
-                    stack.push(7);
+        void move() {
+            if(direction == 1) {
+                column--;
+                if(column < 1)
+                    column = src.columns(row);
+            }
+            else if(direction == 2) {
+                row--;
+                if(row < 1)
+                    row = src.rows();
+            }
+            else if(direction == 3) {
+                column++;
+                if(column > src.columns(row))
+                    column = 1;
+            }
+            else if(direction == 4) {
+                row++;
+                if(row > src.rows())
+                    row = 1;
+            }
+            else {
+                std::cout << "invalid direction" << std::endl;
+                exit(1);
+            }
+        }
+        void draw() {
+            //show source code
+            std::string str;
+            for(int i = 1; i <= src.rows(); i++) {
+                for(int j = 1; j <= src.columns(i); j++) {
+                    char ch = src.getChar(i, j);
+                    std::string chstr(1, ch);
+                    if(i == row && j == column)
+                        str += "\e[48;5;248m" + chstr + "\e[0m";
+                    else
+                        str += chstr;
                 }
             }
+            str += "\n";
+
+            //show stack
+            for(int i = 0; i < stack.count(); i++)
+               str += std::to_string(stack[i]) + " ";
+            for(int i = stack.count(); i < 30; i++)
+                str += " ";
+            str += "\n";
+
+            //show result
+            str += output;
+            str += "\n";
+
+            str += "\r\e[3A";
+            std::cout << str << std::flush;
+        }
+        void run() {
+            while(!end) {
+                this->draw();
+
+                if(skip) {
+                    skip = false;
+                    move();
+                    continue;
+                }
+
+                char c = src.getChar(row, column);
+                //std::cout << c << row << column << std::endl;
+                if(ascii) {
+                    if(c == '"') {
+                        ascii = false;
+                    }
+                    else {
+                        stack.push((int)c);
+                    }
+                }
+                else {
+                    if(c == '<') {
+                        direction = 1;
+                    }
+                    else if(c == '>') {
+                        direction = 3;
+                    }
+                    else if(c == '^') {
+                        direction = 2;
+                    }
+                    else if(c == 'v') {
+                        direction = 4;
+                    }
+                    else if(c == '_') {
+                        if(stack.pop() == 0) {
+                            direction = 3;
+                        }
+                        else {
+                            direction = 1;
+                        }
+                    }
+                    else if(c == '|') {
+                        if(stack.pop() == 0) {
+                            direction = 4;
+                        }
+                        else {
+                            direction = 2;
+                        }
+                    }
+                    else if(c == '?') {
+                        direction = rand();
+                    }
+                    else if(c == ' ') {
+                    }
+                    else if(c == '#') {
+                        skip = true;
+                    }
+                    else if(c == '@') {
+                        end = true;
+                    }
+                    else if(c == '0') {
+                        stack.push(0);
+                    }
+                    else if(c == '1') {
+                        stack.push(1);
+                    }
+                    else if(c == '2') {
+                        stack.push(2);
+                    }
+                    else if(c == '3') {
+                        stack.push(3);
+                    }
+                    else if(c == '4') {
+                        stack.push(4);
+                    }
+                    else if(c == '5') {
+                        stack.push(5);
+                    }
+                    else if(c == '6') {
+                        stack.push(6);
+                    }
+                    else if(c == '7') {
+                        stack.push(7);
+                    }
+                    else if(c == '8') {
+                        stack.push(8);
+                    }
+                    else if(c == '9') {
+                        stack.push(9);
+                    }
+                    else if(c == '"') {
+                        ascii = true;
+                    }
+                    else if(c == '&') {
+                        std::string input;
+                        std::cin >> input;
+                        stack.push(std::stoi(input));
+                    }
+                    else if(c == '~') {
+                        char input;
+                        std::cin >> input;
+                        stack.push((int)input);
+                    }
+                    else if(c == '.') {
+                        int x = stack.pop();
+                        output += (char)x + " ";
+                    }
+                    else if(c == ',') {
+                        int x = stack.pop();
+                        char ch = (char)x;
+                        output += ch;
+                    }
+                    else if(c == '+') {
+                        int y = stack.pop();
+                        int x = stack.pop();
+                        stack.push(x + y);
+                    }
+                    else if(c == '-') {
+                        int y = stack.pop();
+                        int x = stack.pop();
+                        stack.push(x - y);
+                    }
+                    else if(c == '*') {
+                        int y = stack.pop();
+                        int x = stack.pop();
+                        stack.push(x * y);
+                    }
+                    else if(c == '/') {
+                        int y = stack.pop();
+                        int x = stack.pop();
+                        stack.push(x / y);
+                    }
+                    else if(c == '%') {
+                        int y = stack.pop();
+                        int x = stack.pop();
+                        stack.push(x % y);
+                    }
+                    else if(c == '`') {
+                        int y = stack.pop();
+                        int x = stack.pop();
+                        if(x > y)
+                            stack.push(1);
+                        else
+                            stack.push(0);
+                    }
+                    else if(c == '!') {
+                        int x = stack.pop();
+                        if(x == 1)
+                            stack.push(0);
+                        else
+                            stack.push(1);
+                    }
+                    else if(c == ':') {
+                        int x = stack.pop();
+                        stack.push(x);
+                        stack.push(x);
+                    }
+                    else if(c == '\\') {
+                        int y = stack.pop();
+                        int x = stack.pop();
+                        stack.push(y);
+                        stack.push(x);
+                    }
+                    else if(c == '$') {
+                        stack.pop();
+                    }
+                    else if(c == 'g') {
+                        int y = stack.pop();
+                        int x = stack.pop();
+                        int ch = (int)src.getChar(y, x);
+                        stack.push(ch);
+                    }
+                    else if(c == 'p') {
+                        int y = stack.pop();
+                        int x = stack.pop();
+                        int v = stack.pop();
+                        src.writeChar(y, x, (char)v);
+                    }
+                    else {
+                        std::cout << "syntax error" << std::endl;
+                        exit(1);
+                    }
+                }
+
+                sleep();
+                move();
+            }
+            std::cout << std::flush;
         };
 };
 #endif
