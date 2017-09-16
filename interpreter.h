@@ -15,12 +15,6 @@ inline int rand() {
 }
 
 
-std::chrono::milliseconds duration(100);
-inline void sleep() {
-    std::this_thread::sleep_for(duration);
-}
-
-
 class Interpreter {
     private:
         Stack stack = Stack(100);
@@ -32,8 +26,10 @@ class Interpreter {
         bool skip;
         bool ascii;
         std::string output;
+        int runSpeed;
+        std::chrono::milliseconds duration;
     public:
-        Interpreter(const Source& _src) {
+        Interpreter(const Source& _src, int _runSpeed) {
             src = _src;
             row = 1;
             column = 1;
@@ -41,6 +37,11 @@ class Interpreter {
             end = false;
             skip = false;
             ascii = false;
+            runSpeed = _runSpeed;
+            duration = std::chrono::milliseconds(runSpeed);
+        };
+        void sleep() {
+            std::this_thread::sleep_for(duration);
         };
         void move() {
             if(direction == 1) {
