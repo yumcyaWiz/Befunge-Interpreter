@@ -29,10 +29,16 @@ class Source {
             return src[i].size();
         };
         char getChar(int i, int j) const {
-            if(i < 0 || i >= src.size() || j < 0 || j >= src[i].size()) {
-                std::cout << "invalid (row, column) access at (" << i << ", " << j << ")" << std::endl;
+            //if(i < 0 || i >= src.size() || j < 0 || j >= src[i].size()) {
+            //    std::cout << "invalid (row, column) access at (" << i << ", " << j << ")" << std::endl;
+            //    exit(1);
+            //}
+            if(i < 0 || i >= src.size()) {
+                std::cout << "incalid row access " << i << std::endl;
                 exit(1);
             }
+            if(j < 0 || j >= src[i].size())
+                return ' ';
             return src[i][j];
         };
         void writeChar(int i, int j, char c) {

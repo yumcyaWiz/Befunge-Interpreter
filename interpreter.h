@@ -15,6 +15,18 @@ inline int rand() {
 }
 
 
+inline int getLRCount(std::string str) {
+    int count = 0;
+    for(int i = 0; i < str.size(); i++) {
+        if(str[i] == '\n') {
+            count++;
+        }
+    }
+    return count;
+}
+
+
+
 class Interpreter {
     private:
         Stack stack = Stack(100);
@@ -88,7 +100,7 @@ class Interpreter {
             //show stack
             for(int i = 0; i < stack.count(); i++)
                str += std::to_string(stack[i]) + " ";
-            for(int i = stack.count(); i < 30; i++)
+            for(int i = stack.count(); i < 40; i++)
                 str += " ";
             str += "\n";
 
@@ -96,7 +108,7 @@ class Interpreter {
             str += output;
             str += "\n";
 
-            str += "\r\e[" + std::to_string(3 + src.rows()) + "A";
+            str += "\r\e[" + std::to_string(getLRCount(str)) + "A";
             std::cout << str << std::flush;
         }
         void run() {
