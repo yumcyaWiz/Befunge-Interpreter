@@ -203,63 +203,79 @@ class Interpreter {
                     }
                     else if(c == '.') {
                         int x = stack.pop();
-                        output += (char)x + " ";
+                        if(x != STACK_NODATA)
+                            output += (char)x + " ";
                     }
                     else if(c == ',') {
                         int x = stack.pop();
-                        char ch = (char)x;
-                        output += ch;
+                        if(x != STACK_NODATA) {
+                            char ch = (char)x;
+                            output += ch;
+                        }
                     }
                     else if(c == '+') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        stack.push(x + y);
+                        if(x != STACK_NODATA && y != STACK_NODATA)
+                            stack.push(x + y);
                     }
                     else if(c == '-') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        stack.push(x - y);
+                        if(x != STACK_NODATA && y != STACK_NODATA)
+                            stack.push(x - y);
                     }
                     else if(c == '*') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        stack.push(x * y);
+                        if(x != STACK_NODATA && y != STACK_NODATA)
+                            stack.push(x * y);
                     }
                     else if(c == '/') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        stack.push(x / y);
+                        if(x != STACK_NODATA && y != STACK_NODATA)
+                            stack.push(x / y);
                     }
                     else if(c == '%') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        stack.push(x % y);
+                        if(x != STACK_NODATA && y != STACK_NODATA)
+                            stack.push(x % y);
                     }
-                    else if(c == '`') {
+                    else if(c == '\'') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        if(x > y)
-                            stack.push(1);
-                        else
-                            stack.push(0);
+                        if(x != STACK_NODATA && y != STACK_NODATA) {
+                            if(x > y)
+                                stack.push(1);
+                            else
+                                stack.push(0);
+                        }
                     }
                     else if(c == '!') {
                         int x = stack.pop();
-                        if(x == 1)
-                            stack.push(0);
-                        else
-                            stack.push(1);
+                        if(x != STACK_NODATA) {
+                            if(x == 1)
+                                stack.push(0);
+                            else
+                                stack.push(1);
+                        }
                     }
                     else if(c == ':') {
                         int x = stack.pop();
-                        stack.push(x);
-                        stack.push(x);
+                        if(x != STACK_NODATA) {
+                            stack.push(x);
+                            stack.push(x);
+                        }
                     }
                     else if(c == '\\') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        stack.push(y);
-                        stack.push(x);
+                        if(x != STACK_NODATA && y != STACK_NODATA) {
+                            stack.push(y);
+                            stack.push(x);
+                        }
                     }
                     else if(c == '$') {
                         stack.pop();
@@ -267,14 +283,18 @@ class Interpreter {
                     else if(c == 'g') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        int ch = (int)src.getChar(y, x);
-                        stack.push(ch);
+                        if(x != STACK_NODATA && y != STACK_NODATA) {
+                            int ch = (int)src.getChar(y, x);
+                            stack.push(ch);
+                        }
                     }
                     else if(c == 'p') {
                         int y = stack.pop();
                         int x = stack.pop();
                         int v = stack.pop();
-                        src.writeChar(y, x, (char)v);
+                        if(y != STACK_NODATA && x != STACK_NODATA && v != STACK_NODATA) {
+                            src.writeChar(y, x, (char)v);
+                        }
                     }
                     else {
                         std::cout << "syntax error" << std::endl;
