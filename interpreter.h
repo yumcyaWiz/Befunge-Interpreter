@@ -246,10 +246,10 @@ class Interpreter {
                     }
                     else if(c == '!') {
                         int x = stack.pop();
-                        if(x == 1)
-                            stack.push(0);
-                        else
+                        if(x == 0)
                             stack.push(1);
+                        else
+                            stack.push(0);
                     }
                     else if(c == ':') {
                         int x = stack.pop();
