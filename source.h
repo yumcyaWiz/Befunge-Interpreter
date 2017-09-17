@@ -20,26 +20,27 @@ class Source {
                 std::getline(file, reading_buffer);
                 src.push_back(reading_buffer);
             }
+            file.close();
         };
         int rows() const {
             return src.size() - 1;
         };
         int columns(int i) const {
-            return src[i - 1].size();
+            return src[i].size();
         };
         char getChar(int i, int j) const {
-            if(i < 1 || i > src.size() || j < 1 || j > src[i - 1].size()) {
+            if(i < 0 || i >= src.size() || j < 0 || j >= src[i].size()) {
                 std::cout << "invalid (row, column) access at (" << i << ", " << j << ")" << std::endl;
                 exit(1);
             }
-            return src[i - 1][j - 1];
+            return src[i][j];
         };
         void writeChar(int i, int j, char c) {
-            if(i < 1 || i > src.size() || j < 1 || j > src[i - 1].size()) {
+            if(i < 0 || i >= src.size() || j < 0 || j >= src[i].size()) {
                 std::cout << "invalid (row, column) access at (" << i << ", " << j << ")" << std::endl;
                 exit(1);
             }
-            src[i - 1][j - 1] = c;
+            src[i][j] = c;
         }
         std::string getLine(int i) const {
             return src[i];

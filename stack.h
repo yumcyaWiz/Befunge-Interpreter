@@ -4,9 +4,6 @@
 #include <cstdlib>
 
 
-const int STACK_NODATA = 0;
-
-
 class Stack {
     private:
         int* stack;
@@ -44,7 +41,7 @@ class Stack {
         int pop() {
             if(index <= 0) {
                 //std::cout << "no data in stack" << std::endl;
-                return STACK_NODATA;
+                return 0;
             }
             index--;
             return stack[index];

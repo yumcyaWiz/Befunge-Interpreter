@@ -31,8 +31,8 @@ class Interpreter {
     public:
         Interpreter(const Source& _src, int _runSpeed) {
             src = _src;
-            row = 1;
-            column = 1;
+            row = 0;
+            column = 0;
             direction = 3;
             end = false;
             skip = false;
@@ -46,23 +46,23 @@ class Interpreter {
         void move() {
             if(direction == 1) {
                 column--;
-                if(column < 1)
-                    column = src.columns(row);
+                if(column < 0)
+                    column = src.columns(row) - 1;
             }
             else if(direction == 2) {
                 row--;
-                if(row < 1)
-                    row = src.rows();
+                if(row < 0)
+                    row = src.rows() - 1;
             }
             else if(direction == 3) {
                 column++;
-                if(column > src.columns(row))
-                    column = 1;
+                if(column >= src.columns(row))
+                    column = 0;
             }
             else if(direction == 4) {
                 row++;
-                if(row > src.rows())
-                    row = 1;
+                if(row >= src.rows())
+                    row = 0;
             }
             else {
                 std::cout << "invalid direction" << std::endl;
@@ -72,8 +72,8 @@ class Interpreter {
         void draw() {
             //show source code
             std::string str;
-            for(int i = 1; i <= src.rows(); i++) {
-                for(int j = 1; j <= src.columns(i); j++) {
+            for(int i = 0; i < src.rows(); i++) {
+                for(int j = 0; j < src.columns(i); j++) {
                     char ch = src.getChar(i, j);
                     std::string chstr(1, ch);
                     if(i == row && j == column)
@@ -81,6 +81,7 @@ class Interpreter {
                     else
                         str += chstr;
                 }
+                str += "\n";
             }
             str += "\n";
 
@@ -95,7 +96,7 @@ class Interpreter {
             str += output;
             str += "\n";
 
-            str += "\r\e[3A";
+            str += "\r\e[" + std::to_string(3 + src.rows()) + "A";
             std::cout << str << std::flush;
         }
         void run() {
@@ -203,79 +204,63 @@ class Interpreter {
                     }
                     else if(c == '.') {
                         int x = stack.pop();
-                        if(x != STACK_NODATA)
-                            output += (char)x + " ";
+                        output += std::to_string(x) + " ";
                     }
                     else if(c == ',') {
                         int x = stack.pop();
-                        if(x != STACK_NODATA) {
-                            char ch = (char)x;
-                            output += ch;
-                        }
+                        std::string ch(1, (char)x);
+                        output += ch;
                     }
                     else if(c == '+') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        if(x != STACK_NODATA && y != STACK_NODATA)
-                            stack.push(x + y);
+                        stack.push(x + y);
                     }
                     else if(c == '-') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        if(x != STACK_NODATA && y != STACK_NODATA)
-                            stack.push(x - y);
+                        stack.push(x - y);
                     }
                     else if(c == '*') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        if(x != STACK_NODATA && y != STACK_NODATA)
-                            stack.push(x * y);
+                        stack.push(x * y);
                     }
                     else if(c == '/') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        if(x != STACK_NODATA && y != STACK_NODATA)
-                            stack.push(x / y);
+                        stack.push(x / y);
                     }
                     else if(c == '%') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        if(x != STACK_NODATA && y != STACK_NODATA)
-                            stack.push(x % y);
+                        stack.push(x % y);
                     }
-                    else if(c == '\'') {
+                    else if(c == '`') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        if(x != STACK_NODATA && y != STACK_NODATA) {
-                            if(x > y)
-                                stack.push(1);
-                            else
-                                stack.push(0);
-                        }
+                        if(x > y)
+                            stack.push(1);
+                        else
+                            stack.push(0);
                     }
                     else if(c == '!') {
                         int x = stack.pop();
-                        if(x != STACK_NODATA) {
-                            if(x == 1)
-                                stack.push(0);
-                            else
-                                stack.push(1);
-                        }
+                        if(x == 1)
+                            stack.push(0);
+                        else
+                            stack.push(1);
                     }
                     else if(c == ':') {
                         int x = stack.pop();
-                        if(x != STACK_NODATA) {
-                            stack.push(x);
-                            stack.push(x);
-                        }
+                        stack.push(x);
+                        stack.push(x);
                     }
                     else if(c == '\\') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        if(x != STACK_NODATA && y != STACK_NODATA) {
-                            stack.push(y);
-                            stack.push(x);
-                        }
+                        stack.push(y);
+                        stack.push(x);
                     }
                     else if(c == '$') {
                         stack.pop();
@@ -283,18 +268,14 @@ class Interpreter {
                     else if(c == 'g') {
                         int y = stack.pop();
                         int x = stack.pop();
-                        if(x != STACK_NODATA && y != STACK_NODATA) {
-                            int ch = (int)src.getChar(y, x);
-                            stack.push(ch);
-                        }
+                        int ch = (int)src.getChar(y, x);
+                        stack.push(ch);
                     }
                     else if(c == 'p') {
                         int y = stack.pop();
                         int x = stack.pop();
                         int v = stack.pop();
-                        if(y != STACK_NODATA && x != STACK_NODATA && v != STACK_NODATA) {
-                            src.writeChar(y, x, (char)v);
-                        }
+                        src.writeChar(y, x, (char)v);
                     }
                     else {
                         std::cout << "syntax error" << std::endl;
