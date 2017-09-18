@@ -34,7 +34,7 @@ class Source {
             //    exit(1);
             //}
             if(i < 0 || i >= src.size()) {
-                std::cout << "incalid row access " << i << std::endl;
+                std::cout << "incalid row read " << i << std::endl;
                 exit(1);
             }
             if(j < 0 || j >= src[i].size())
@@ -43,13 +43,24 @@ class Source {
         };
         void writeChar(int i, int j, char c) {
             if(i < 0 || i >= src.size() || j < 0 || j >= src[i].size()) {
-                std::cout << "invalid (row, column) access at (" << i << ", " << j << ")" << std::endl;
+                std::cout << "invalid (row, column) write at (" << i << ", " << j << ")" << std::endl;
                 exit(1);
             }
             src[i][j] = c;
         }
         std::string getLine(int i) const {
             return src[i];
+        };
+        int getLRCount() const {
+            int count = 0;
+            for(int i = 0; i < this->rows(); i++) {
+                for(int j = 0; j < this->columns(i); j++) {
+                    char ch = this->getChar(i, j);
+                    if(ch == '\n')
+                        count++;
+                }
+            }
+            return count;
         };
 };
 #endif

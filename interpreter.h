@@ -201,7 +201,7 @@ class Interpreter {
                     else if(c == '9') {
                         stack.push(9);
                     }
-                    else if(c == '"') {
+                    else if(c == '"' || c == '\'') {
                         ascii = true;
                     }
                     else if(c == '&') {
